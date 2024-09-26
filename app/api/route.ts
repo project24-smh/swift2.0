@@ -1,5 +1,5 @@
-import axios from "axios";
 import Groq from "groq-sdk";
+import axios from "axios";  // Add axios for API requests
 import { headers } from "next/headers";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
@@ -41,16 +41,16 @@ export async function POST(request: Request) {
 			{
 				role: "system",
 				content: `- You are Swift, a friendly and helpful voice assistant.
-				- Respond briefly to the user's request, and do not provide unnecessary information.
-				- If you don't understand the user's request, ask for clarification.
-				- You do not have access to up-to-date information, so you should not provide real-time data.
-				- You are not capable of performing actions other than responding to the user.
-				- Do not use markdown, emojis, or other formatting in your responses. Respond in a way easily spoken by text-to-speech software.
-				- User location is ${location()}.
-				- The current time is ${time()}.
-				- Your large language model is Llama 3, created by Meta, the 8 billion parameter version. It is hosted on Groq, an AI infrastructure company that builds fast inference technology.
-				- Your text-to-speech model is Sonic, created and hosted by Cartesia, a company that builds fast and realistic speech synthesis technology.
-				- You are built with Next.js and hosted on Vercel.`,
+			- Respond briefly to the user's request, and do not provide unnecessary information.
+			- If you don't understand the user's request, ask for clarification.
+			- You do not have access to up-to-date information, so you should not provide real-time data.
+			- You are not capable of performing actions other than responding to the user.
+			- Do not use markdown, emojis, or other formatting in your responses. Respond in a way easily spoken by text-to-speech software.
+			- User location is ${location()}.
+			- The current time is ${time()}.
+			- Your large language model is Llama 3, created by Meta, the 8 billion parameter version. It is hosted on Groq, an AI infrastructure company that builds fast inference technology.
+			- Your text-to-speech model is Sonic, created and hosted by Cartesia, a company that builds fast and realistic speech synthesis technology.
+			- You are built with Next.js and hosted on Vercel.`,
 			},
 			...data.message,
 			{
@@ -74,8 +74,8 @@ export async function POST(request: Request) {
 		{
 			text: response,
 			voice_settings: {
-				voice: "Kanika_Female", // Adjust this according to available Eleven Labs Bangla voices
-				language: "hi", // ISO 639-1 code for Bengali (Bangla)
+				voice: "Bangla_Female", // Change this to an appropriate Bangla voice if available
+				language: "bn", // ISO 639-1 code for Bengali (Bangla)
 			},
 			output_format: {
 				container: "mp3",
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 		{
 			headers: {
 				"Content-Type": "application/json",
-				"xi-api-key": "sk_12966f357a22a6c360b29bd2c0ccf1c94e0ee91090a9dfd0", // Eleven Labs API Key
+				"xi-api-key": process.env.ELEVEN_LABS_API_KEY!, // Use your Eleven Labs API key
 			},
 		}
 	);
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
 	);
 
 	if (!elevenLabsResponse.data) {
-		console.error("Voice synthesis failed:", elevenLabsResponse.statusText);
+		console.error(elevenLabsResponse.data);
 		return new Response("Voice synthesis failed", { status: 500 });
 	}
 
@@ -105,9 +105,8 @@ export async function POST(request: Request) {
 		);
 	});
 
-	return new Response(elevenLabsResponse.data, {
+	return new Response(elevenLabsResponse.data.audio, {
 		headers: {
-			"Content-Type": "audio/mpeg",
 			"X-Transcript": encodeURIComponent(transcript),
 			"X-Response": encodeURIComponent(response),
 		},
